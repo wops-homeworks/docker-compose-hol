@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  mongodb:
+    container_name: mongodb_service
+    image: "mongo:latest"
+  
+  redis:
+    container_name: redis_service
+    image: "redis:latest"
+
+  app:
+    container_name: hello-wops
+    build:
+      context: .
+
+
+    
+
