@@ -4,16 +4,28 @@ services:
   mongodb:
     container_name: mongodb_service
     image: "mongo:latest"
+    ports:
+      - 27017:27017
   
   redis:
     container_name: redis_service
-    image: "redis:latest"
+    image: "redis:alpine"
+    ports:
+      - 6379:6379
 
   app:
     container_name: hello-wops
     build:
       context: .
-
-
-    
-
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      PORT: 3000
+      MONGO_HOST: mongodb_service
+      MONGO_PORT: 27017
+      REDIS_URL: "redis://redis_service:6379"
+      REDIS_PORT: 6379
+      REDIS_HOST: redis_service
+    ports:
+      - 3001:3000
