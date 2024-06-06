@@ -32,7 +32,7 @@ services:
       - mongodb:mongodb_database
       - redis:redis_database
     volumes:
-       - ./Docker_Logs:/logs ## Hostmachine Dir : Container Dir
+       - ./Docker_Logs:/app/logs ## Hostmachine Dir : Container Dir
 
 networks:
   node_network:
