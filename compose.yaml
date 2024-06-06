@@ -1,0 +1,39 @@
+services:
+  mongodb:
+    container_name: mongodb_service
+    image: "mongo:latest"
+    networks:
+      - node_network
+
+  
+  redis:
+    container_name: redis_service
+    image: "redis:latest"
+    networks:
+      - node_network
+
+
+  app:
+    container_name: hello-wops
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - MONGO_HOST=mongodb_database
+      - MONGO_PORT=27017
+      - REDIS_HOST=redis_database
+      - REDIS_PORT=6379
+      - PORT=3000
+    networks:
+      - node_network
+    links:
+      - mongodb:mongodb_database
+      - redis:redis_database
+    volumes:
+       - ./Docker_Logs:/logs ## Hostmachine Dir : Container Dir
+
+networks:
+  node_network:
+    driver: bridge

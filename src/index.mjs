@@ -1,57 +1,62 @@
-import chalk from "chalk";
 import express from "express";
 import winston from "winston";
 import expressWinston from "express-winston";
 import mongoose from "mongoose";
 import redis from "redis";
+import path from "path";
 
 const app = express();
 const port = process.env.PORT;
 
-const mongoUri = `mongodb://${process.env.MONGO_HOST}:${process.env
-  .MONGO_PORT}`;
-
-const redisHost = process.env.REDIS_HOST;
-const redisPort = process.env.REDIS_PORT;
 
 async function checkMongoConnection() {
   try {
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`);
     console.log("Connected to MongoDB successfully!");
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);
     process.exit(1); // Exit the application on connection failure
   }
 }
-const redisUrl = process.env.REDIS_URL;
+
 async function checkRedisConnection() {
   try {
-    console.log(redisHost, redisPort);
-    // const client = redis.createClient({ host: redisHost, port: redisPort });
-    const client = redis.createClient({ url: redisUrl });
+    const client = redis.createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    });
     await client.connect();
     console.log("Connected to Redis successfully!");
-    client.quit(); // Disconnect from Redis after successful check
   } catch (err) {
     console.error("Error connecting to Redis:", err);
     process.exit(1); // Exit the application on connection failure
   }
 }
 
+const logDir = path.resolve(process.cwd(), "logs");
+
+// Configure express-winston to log to a file
 app.use(
   expressWinston.logger({
     transports: [
       new winston.transports.Console({
         json: true,
-        colorize: true
-      })
-    ]
+        colorize: true,
+      }),
+      new winston.transports.File({
+        filename: path.join(logDir, "log.txt"),
+      }),
+    ],
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.json()
+    ),
   })
 );
+
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.sendFile("index.html");
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
 });
 
 (async () => {
